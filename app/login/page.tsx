@@ -25,8 +25,7 @@ export default function Login() {
 
       if (error) throw error
 
-      router.push('/')
-      router.refresh()
+      window.location.href = '/'
     } catch (error: any) {
       setError(error.message)
     } finally {
