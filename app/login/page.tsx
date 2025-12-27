@@ -24,7 +24,9 @@ export default function Login() {
       })
 
       if (error) throw error
-
+      
+      // Wait a moment for cookies to be set
+      await new Promise(resolve => setTimeout(resolve, 100))
       window.location.href = '/'
     } catch (error: any) {
       setError(error.message)
