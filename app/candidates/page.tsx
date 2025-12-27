@@ -9,7 +9,7 @@ export interface DiscoveryCandidate {
   source: string
   source_url: string
   discovered_at: string
-  status: 'pending' | 'approved' | 'rejected'
+  status: 'new' | 'watching' | 'promoted' | 'rejected'
   curator_notes?: string
 }
 import Link from 'next/link'
