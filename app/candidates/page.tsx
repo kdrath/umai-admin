@@ -1,7 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, type DiscoveryCandidate } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
+
+export interface DiscoveryCandidate {
+  id: string
+  title: string
+  source: string
+  source_url: string
+  discovered_at: string
+  status: 'pending' | 'approved' | 'rejected'
+  curator_notes?: string
+}
 import Link from 'next/link'
 import Header from '@/components/Header'
 
@@ -11,6 +21,7 @@ export default function CandidatesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('new')
 
   useEffect(() => {
+    const supabase = createClient()
     loadCandidates()
   }, [statusFilter])
 
