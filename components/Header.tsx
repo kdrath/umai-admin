@@ -1,13 +1,14 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function Header({ currentPage }: { currentPage: string }) {
   const router = useRouter()
-
+  
   async function handleLogout() {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
   }
@@ -22,6 +23,7 @@ export default function Header({ currentPage }: { currentPage: string }) {
               Unconventional Media Archive Interface
             </p>
           </div>
+          
           <nav className="flex gap-6 text-xs uppercase tracking-wider items-baseline">
             <Link 
               href="/" 

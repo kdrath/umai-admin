@@ -1,9 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, type Work } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import Header from '@/components/Header'
+
+export interface Work {
+  id: string
+  title: string
+  creator?: string
+  year?: string
+  medium?: string
+  evaluation_status?: string
+  score_total?: number | null
+  critical_notes?: string
+}
 
 export default function WorksPage() {
   const [works, setWorks] = useState<Work[]>([])
@@ -16,6 +27,7 @@ export default function WorksPage() {
 
   async function loadWorks() {
     setLoading(true)
+    const supabase = createClient()
     
     let query = supabase
       .from('works')

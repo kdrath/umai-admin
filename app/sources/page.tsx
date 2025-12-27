@@ -1,9 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase, type DiscoverySource } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import Header from '@/components/Header'
+
+export interface DiscoverySource {
+  id: string
+  name: string
+  type: string
+  enabled: boolean
+  quality_weight: number
+  schedule_type: string
+  tags: string[]
+  last_run_at?: string
+}
 
 export default function SourcesPage() {
   const [sources, setSources] = useState<DiscoverySource[]>([])
@@ -14,6 +25,7 @@ export default function SourcesPage() {
   }, [])
 
   async function loadSources() {
+    const supabase = createClient()
     const { data } = await supabase
       .from('discovery_sources')
       .select('*')
@@ -24,6 +36,7 @@ export default function SourcesPage() {
   }
 
   async function toggleSource(id: string, enabled: boolean) {
+    const supabase = createClient()
     await supabase
       .from('discovery_sources')
       .update({ enabled: !enabled })
@@ -33,6 +46,7 @@ export default function SourcesPage() {
   }
 
   async function updateWeight(id: string, weight: number) {
+    const supabase = createClient()
     await supabase
       .from('discovery_sources')
       .update({ quality_weight: weight })
