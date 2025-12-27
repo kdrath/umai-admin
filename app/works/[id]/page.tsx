@@ -2,10 +2,41 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { supabase, type Work } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import MarkdownEditor from '@/components/MarkdownEditor'
+
+export interface Work {
+  id: string
+  title: string
+  creator?: string
+  year?: number | null
+  medium?: string
+  country?: string
+  language?: string
+  runtime?: string
+  evaluation_status?: string
+  score_total?: number | null
+  score_narrative?: number | null
+  score_formal?: number | null
+  score_exclusion?: number | null
+  score_preservation?: number | null
+  desc_narrative?: string
+  desc_formal?: string
+  desc_exclusion?: string
+  desc_preservation?: string
+  circ_distribution?: string
+  circ_audiences?: string
+  circ_institutional?: string
+  pres_copies?: string
+  pres_condition?: string
+  pres_urgency?: string
+  critical_notes?: string
+  access_availability?: string
+  access_scholarship?: string
+  published_at?: string
+}
 
 export default function WorkDetailPage() {
   const params = useParams()
@@ -19,6 +50,7 @@ export default function WorkDetailPage() {
   }, [params.id])
 
   async function loadWork() {
+    const supabase = createClient()
     const { data } = await supabase
       .from('works')
       .select('*')
@@ -33,6 +65,7 @@ export default function WorkDetailPage() {
     if (!work) return
     
     setSaving(true)
+    const supabase = createClient()
     const { error } = await supabase
       .from('works')
       .update(work)
@@ -50,6 +83,7 @@ export default function WorkDetailPage() {
     if (!work) return
     
     setSaving(true)
+    const supabase = createClient()
     const { error } = await supabase
       .from('works')
       .update({

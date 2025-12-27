@@ -2,9 +2,31 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { supabase, type DiscoveryCandidate } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase'
 import Link from 'next/link'
 import Header from '@/components/Header'
+
+export interface DiscoveryCandidate {
+  id: string
+  title: string
+  source: string
+  source_url: string
+  discovered_at: string
+  status: 'pending' | 'approved' | 'rejected'
+  curator_notes?: string
+  medium_guess?: string
+  creator?: string
+  year?: string
+  country?: string
+  language?: string
+  signal_score?: number
+  evidence_snippet?: string
+  triage_notes?: string
+  promoted_at?: string
+  promoted_work_id?: string
+  reviewed_at?: string
+  next_review_at?: string
+}
 
 export default function CandidateDetailPage() {
   const params = useParams()
@@ -19,6 +41,7 @@ export default function CandidateDetailPage() {
   }, [params.id])
 
   async function loadCandidate() {
+    const supabase = createClient()
     const { data } = await supabase
       .from('discovery_candidates')
       .select('*')
@@ -34,6 +57,7 @@ export default function CandidateDetailPage() {
     if (!candidate) return
     
     setProcessing(true)
+    const supabase = createClient()
     
     // Generate work ID
     const workId = `UMAI-${(candidate.medium_guess || 'WORK').toUpperCase()}-${Date.now().toString().slice(-6)}`
@@ -82,6 +106,7 @@ export default function CandidateDetailPage() {
     if (!candidate) return
     
     setProcessing(true)
+    const supabase = createClient()
     await supabase
       .from('discovery_candidates')
       .update({
