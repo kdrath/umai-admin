@@ -11,6 +11,18 @@ export interface DiscoveryCandidate {
   discovered_at: string
   status: 'new' | 'watching' | 'promoted' | 'rejected'
   curator_notes?: string
+  medium_guess?: string
+  creator?: string
+  year?: string
+  country?: string
+  language?: string
+  signal_score?: number
+  evidence_snippet?: string
+  triage_notes?: string
+  promoted_at?: string
+  promoted_work_id?: string
+  reviewed_at?: string
+  next_review_at?: string
 }
 import Link from 'next/link'
 import Header from '@/components/Header'
