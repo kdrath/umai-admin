@@ -27,7 +27,7 @@ export default function CandidatesPage() {
 
   async function loadCandidates() {
     setLoading(true)
-    
+    const supabase = createClient()
     let query = supabase
       .from('discovery_candidates')
       .select('*')
