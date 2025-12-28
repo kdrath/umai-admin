@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Create an initial response
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
@@ -26,23 +25,30 @@ export async function middleware(request: NextRequest) {
   )
 
   const pathname = request.nextUrl.pathname
+
   const isLogin = pathname.startsWith('/login')
   const isNotAuthorized = pathname.startsWith('/not-authorized')
+  const isAuthSetSession = pathname.startsWith('/auth/set-session')
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  // Not logged in → only allow /login
+  // Not logged in:
+  // - allow /login
+  // - allow POST /auth/set-session so cookies can be established
+  // - redirect everything else to /login
   if (!user) {
-    if (!isLogin) return NextResponse.redirect(new URL('/login', request.url))
-    return response
+    if (isLogin || isAuthSetSession) return response
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Logged in → block /login
+  // Logged in: block /login
   if (isLogin) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Admin check
+  // Admin check (allow /not-authorized so the redirect can land)
   if (!isNotAuthorized) {
     const { data: profile, error } = await supabase
       .from('profiles')
