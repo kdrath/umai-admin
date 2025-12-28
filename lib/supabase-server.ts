@@ -12,7 +12,7 @@ export async function createClient() {
         get(name: string) {
           return cookieStore.get(name)?.value
         },
-        // In Next 16, cookies() here is read-only. We do cookie writes in route handlers/middleware instead.
+        // cookies() is read-only here. We write cookies in route handlers (set-session) or proxy/middleware.
         set() {},
         remove() {},
       },
