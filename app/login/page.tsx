@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -29,6 +29,8 @@ export default function LoginPage() {
       const res = await fetch('/auth/set-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store',
         body: JSON.stringify({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
@@ -36,11 +38,20 @@ export default function LoginPage() {
       })
 
       if (!res.ok) {
-        const msg = await res.text().catch(() => '')
+        let msg = ''
+        try {
+          const j = await res.json()
+          msg = j?.error || ''
+        } catch {
+          try {
+            msg = await res.text()
+          } catch {}
+        }
         throw new Error(msg || 'Failed to establish session')
       }
 
-      window.location.href = '/'
+      // hard navigation so middleware runs on server with the new cookies
+      window.location.assign('/')
     } catch (err: any) {
       setError(err?.message || 'Login failed')
     } finally {
