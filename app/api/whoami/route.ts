@@ -1,17 +1,22 @@
-﻿import { NextResponse } from 'next/server'
+﻿import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 
-export async function GET() {
-  const cookieStore = await cookies()
+export async function GET(req: NextRequest) {
+  const res = NextResponse.json({ ok: true })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
+        getAll() {
+          return req.cookies.getAll().map((c) => ({ name: c.name, value: c.value }))
+        },
+        setAll(cookiesToSet: any[]) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            res.cookies.set({ name, value, ...options })
+          })
         },
       },
     }
@@ -19,12 +24,8 @@ export async function GET() {
 
   const { data, error } = await supabase.auth.getUser()
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 })
-  }
-
-  if (!data.user) {
-    return NextResponse.json({ user: null }, { status: 401 })
+  if (error || !data.user) {
+    return NextResponse.json({ error: error?.message || 'Unauthorized' }, { status: 401 })
   }
 
   return NextResponse.json({

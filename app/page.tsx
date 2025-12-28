@@ -1,47 +1,40 @@
-import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+﻿'use client'
 
-export default async function Home() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-        },
-      },
-    }
-  )
-  
-  const { data: { user } } = await supabase.auth.getUser()
+import { useEffect, useState } from 'react'
 
-  if (!user) {
-    redirect('/login')
-  }
+type WhoAmI = { id: string; email: string } | null
+
+export default function Home() {
+  const [user, setUser] = useState<WhoAmI>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/whoami', { cache: 'no-store', credentials: 'same-origin' })
+        if (!res.ok) {
+          setUser(null)
+          setError('Not signed in')
+          return
+        }
+        const data = await res.json()
+        setUser(data)
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load user')
+      }
+    })()
+  }, [])
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">UMAI Admin Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <a href="/works" className="p-6 border rounded-lg hover:shadow-lg">
-          <h2 className="text-xl font-bold mb-2">Works</h2>
-          <p className="text-gray-600">Manage creative works and media</p>
-        </a>
-        <a href="/candidates" className="p-6 border rounded-lg hover:shadow-lg">
-          <h2 className="text-xl font-bold mb-2">Candidates</h2>
-          <p className="text-gray-600">Review and curate candidate works</p>
-        </a>
-        <a href="/sources" className="p-6 border rounded-lg hover:shadow-lg">
-          <h2 className="text-xl font-bold mb-2">Sources</h2>
-          <p className="text-gray-600">Manage source feeds and discovery</p>
-        </a>
+    <main className="p-8">
+      <h1 className="text-2xl font-semibold">UMAI Admin</h1>
+      <p className="mt-2 text-sm text-gray-600">
+        {user ? Signed in as  : error ? error : 'Loading user...'}
+      </p>
+
+      <div className="mt-6 rounded border p-4">
+        <p className="text-sm">Dashboard loaded.</p>
       </div>
-    </div>
+    </main>
   )
 }
