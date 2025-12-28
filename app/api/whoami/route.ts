@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,21 +17,18 @@ export async function GET() {
     }
   )
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 401 })
   }
 
-  if (!user) {
+  if (!data.user) {
     return NextResponse.json({ user: null }, { status: 401 })
   }
 
   return NextResponse.json({
-    id: user.id,
-    email: user.email,
+    id: data.user.id,
+    email: data.user.email,
   })
 }
