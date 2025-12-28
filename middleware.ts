@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { createMiddlewareClient } from '@/lib/supabase-middleware'
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const supabase = createClient()
+  const { supabase, res } = createMiddlewareClient(req)
 
   const {
     data: { session },
@@ -21,7 +21,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return NextResponse.next()
+  return res
 }
 
 export const config = {
