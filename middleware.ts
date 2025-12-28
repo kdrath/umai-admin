@@ -3,9 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   })
 
   const supabase = createServerClient(
@@ -18,32 +16,52 @@ export async function middleware(request: NextRequest) {
         },
         set(name: string, value: string, options: any) {
           request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
+          response = NextResponse.next({ request: { headers: request.headers } })
           response.cookies.set({ name, value, ...options })
         },
         remove(name: string, options: any) {
           request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
+          response = NextResponse.next({ request: { headers: request.headers } })
           response.cookies.set({ name, value: '', ...options })
         },
       },
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
+  const isLogin = pathname.startsWith('/login')
+  const isNotAuthorized = pathname.startsWith('/not-authorized')
 
-  // Redirect to login if not authenticated and not already on login page
-  if (!user && !request.nextUrl.pathname.startsWith('/login')) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Not logged in → only allow /login
+  if (!user) {
+    if (!isLogin) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return response
   }
 
-  // Redirect to home if authenticated and on login page
-  if (user && request.nextUrl.pathname.startsWith('/login')) {
+  // Logged in → block /login
+  if (isLogin) {
     return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Admin check
+  if (!isNotAuthorized) {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('user_id', user.id)
+      .single()
+
+    if (error || !profile?.is_admin) {
+      return NextResponse.redirect(
+        new URL('/not-authorized', request.url)
+      )
+    }
   }
 
   return response
